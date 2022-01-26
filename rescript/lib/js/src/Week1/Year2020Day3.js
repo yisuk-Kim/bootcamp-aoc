@@ -2,10 +2,151 @@
 'use strict';
 
 var Fs = require("fs");
+var $$Array = require("rescript/lib/js/array.js");
+var Belt_Array = require("rescript/lib/js/belt_Array.js");
+var Caml_array = require("rescript/lib/js/caml_array.js");
+var Caml_int32 = require("rescript/lib/js/caml_int32.js");
 
-var input = Fs.readFileSync("input/Week1/Year2020Day3.sample.txt", "utf8");
+var input = Fs.readFileSync("input/Week1/Year2020Day3.input.txt", "utf8");
 
-console.log(input);
+function splitInput(pattern) {
+  return pattern.split("\n");
+}
+
+var inputArray = input.split("\n");
+
+var width = Caml_array.get(inputArray, 0).length;
+
+function getFootprints(slope, _footprints) {
+  while(true) {
+    var footprints = _footprints;
+    var length = footprints.length;
+    var lastPos = Caml_array.get(footprints, length - 1 | 0);
+    if ((Caml_array.get(lastPos, 1) + Caml_array.get(slope, 1) | 0) >= inputArray.length) {
+      return footprints;
+    }
+    var $$new = Belt_Array.concat(footprints, [[
+            Caml_array.get(lastPos, 0) + Caml_array.get(slope, 0) | 0,
+            Caml_array.get(lastPos, 1) + Caml_array.get(slope, 1) | 0
+          ]]);
+    _footprints = $$new;
+    continue ;
+  };
+}
+
+function setModX(pos) {
+  return Belt_Array.map(pos, (function (param) {
+                if (param.length !== 2) {
+                  throw {
+                        RE_EXN_ID: "Match_failure",
+                        _1: [
+                          "Year2020Day3.res",
+                          23,
+                          43
+                        ],
+                        Error: new Error()
+                      };
+                }
+                var x = param[0];
+                var y = param[1];
+                return [
+                        Caml_int32.mod_(x, width),
+                        y
+                      ];
+              }));
+}
+
+function getTrees(pos) {
+  return Belt_Array.map(pos, (function (param) {
+                if (param.length !== 2) {
+                  throw {
+                        RE_EXN_ID: "Match_failure",
+                        _1: [
+                          "Year2020Day3.res",
+                          25,
+                          44
+                        ],
+                        Error: new Error()
+                      };
+                }
+                var x = param[0];
+                var y = param[1];
+                return Caml_array.get(inputArray, y)[x];
+              }));
+}
+
+function treeToNumber(trees) {
+  return $$Array.map((function (v) {
+                if (v === "#") {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              }), trees);
+}
+
+function sum(numbers) {
+  return Belt_Array.reduce(numbers, 0, (function (acc, value) {
+                return acc + value | 0;
+              }));
+}
+
+console.log(sum(treeToNumber(getTrees(setModX(getFootprints([
+                          3,
+                          1
+                        ], [[
+                            0,
+                            0
+                          ]]))))));
+
+var slope = [
+  [
+    1,
+    1
+  ],
+  [
+    3,
+    1
+  ],
+  [
+    5,
+    1
+  ],
+  [
+    7,
+    1
+  ],
+  [
+    1,
+    2
+  ]
+];
+
+function multiply(numbers) {
+  return Belt_Array.reduce(numbers, 1, (function (acc, value) {
+                return Math.imul(acc, value);
+              }));
+}
+
+console.log(multiply(Belt_Array.map(slope, (function (x) {
+                return sum(treeToNumber(getTrees(setModX(getFootprints(x, [[
+                                              0,
+                                              0
+                                            ]])))));
+              }))));
+
+var result;
 
 exports.input = input;
+exports.splitInput = splitInput;
+exports.inputArray = inputArray;
+exports.width = width;
+exports.getFootprints = getFootprints;
+exports.setModX = setModX;
+exports.getTrees = getTrees;
+exports.treeToNumber = treeToNumber;
+exports.sum = sum;
+exports.slope = slope;
+exports.multiply = multiply;
+exports.result = result;
 /* input Not a pure module */
