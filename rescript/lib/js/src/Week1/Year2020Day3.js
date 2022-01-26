@@ -2,7 +2,6 @@
 'use strict';
 
 var Fs = require("fs");
-var $$Array = require("rescript/lib/js/array.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Caml_array = require("rescript/lib/js/caml_array.js");
 var Caml_int32 = require("rescript/lib/js/caml_int32.js");
@@ -34,7 +33,7 @@ function getFootprints(slope, _footprints) {
   };
 }
 
-function setModX(pos) {
+function setModX(pos, d) {
   return Belt_Array.map(pos, (function (param) {
                 if (param.length !== 2) {
                   throw {
@@ -42,7 +41,7 @@ function setModX(pos) {
                         _1: [
                           "Year2020Day3.res",
                           23,
-                          43
+                          60
                         ],
                         Error: new Error()
                       };
@@ -50,7 +49,7 @@ function setModX(pos) {
                 var x = param[0];
                 var y = param[1];
                 return [
-                        Caml_int32.mod_(x, width),
+                        Caml_int32.mod_(x, d),
                         y
                       ];
               }));
@@ -64,7 +63,7 @@ function getTrees(pos) {
                         _1: [
                           "Year2020Day3.res",
                           25,
-                          44
+                          46
                         ],
                         Error: new Error()
                       };
@@ -76,13 +75,13 @@ function getTrees(pos) {
 }
 
 function treeToNumber(trees) {
-  return $$Array.map((function (v) {
+  return Belt_Array.map(trees, (function (v) {
                 if (v === "#") {
                   return 1;
                 } else {
                   return 0;
                 }
-              }), trees);
+              }));
 }
 
 function sum(numbers) {
@@ -97,7 +96,7 @@ console.log(sum(treeToNumber(getTrees(setModX(getFootprints([
                         ], [[
                             0,
                             0
-                          ]]))))));
+                          ]]), width)))));
 
 var slope = [
   [
@@ -132,10 +131,8 @@ console.log(multiply(Belt_Array.map(slope, (function (x) {
                 return sum(treeToNumber(getTrees(setModX(getFootprints(x, [[
                                               0,
                                               0
-                                            ]])))));
+                                            ]]), width))));
               }))));
-
-var result;
 
 exports.input = input;
 exports.splitInput = splitInput;
@@ -148,5 +145,4 @@ exports.treeToNumber = treeToNumber;
 exports.sum = sum;
 exports.slope = slope;
 exports.multiply = multiply;
-exports.result = result;
 /* input Not a pure module */

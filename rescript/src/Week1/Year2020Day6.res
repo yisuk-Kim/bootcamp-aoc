@@ -47,7 +47,7 @@ let getUnion = (answer) => answer -> Belt.Array.reduceWithIndex([],(acc, xs, i) 
     }
 })
 
-let countQuestionNumber = (question) => Belt.Array.map(question, (xs) => Belt.Array.length(xs))
+let countQuestionNumber = (question) => Belt.Array.length(question)
 
 let sum = (num) => num -> Belt.Array.reduce(0, (acc, x) => acc + x)
 
@@ -55,7 +55,7 @@ input -> splitInput
     -> splitGroup
     -> Belt.Array.map((x) => x->splitAnswer)
     -> Belt.Array.map((x) => x->getUnion)
-    -> countQuestionNumber
+    -> Belt.Array.map((x) => x->countQuestionNumber)
     -> sum
     -> Js.log
 
@@ -74,6 +74,6 @@ input -> splitInput
     -> splitGroup
     -> Belt.Array.map((x) => x->splitAnswer)
     -> Belt.Array.map((x) => x->getIntersection)
-    -> countQuestionNumber
+    -> Belt.Array.map((x) => x->countQuestionNumber)
     -> sum
     -> Js.log

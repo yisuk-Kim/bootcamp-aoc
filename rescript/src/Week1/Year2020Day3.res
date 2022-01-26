@@ -20,25 +20,29 @@ let rec getFootprints = (slope, footprints) => {
     }
 }
 
-let setModX = (pos) => Belt.Array.map(pos, ([x,y]) => [mod(x, width),y])
+let setModX = (pos, ~divisor as d) => pos -> Belt.Array.map(([x,y]) => [mod(x, d),y])
 
-let getTrees = (pos) => Belt.Array.map(pos, ([x,y]) => Js.String.get(inputArray[y],x))
+let getTrees = (pos) => pos -> Belt.Array.map(([x,y]) => Js.String.get(inputArray[y],x))
 
-let treeToNumber = (trees) => Array.map((v) => {
+let treeToNumber = (trees) => trees -> Belt.Array.map((v) => {
     if v == "#"
-    {1}
+    {
+        1
+    }
     else
-        {0}
-}, trees)
+    {
+        0
+    }
+})
 
-let sum = (numbers) => Belt.Array.reduce(numbers, 0, (acc, value) => acc + value)
+let sum = (numbers) => numbers -> Belt.Array.reduce(0, (acc, value) => acc + value)
 
 [3,1] -> getFootprints([[0,0]])
--> setModX
--> getTrees
--> treeToNumber
--> sum
--> Js.log
+    -> setModX(~divisor=width)
+    -> getTrees
+    -> treeToNumber
+    -> sum
+    -> Js.log
 
 // part 2
 
@@ -47,9 +51,9 @@ let slope = [[1,1], [3,1], [5,1], [7,1], [1,2]];
 let multiply = (numbers) => Belt.Array.reduce(numbers, 1, (acc, value) => acc * value)
 
 
-let result = slope -> Belt.Array.map((x) => {
-    x -> getFootprints([[0,0]])
-        -> setModX
+slope -> Belt.Array.map((x) => {
+        x -> getFootprints([[0,0]])
+        -> setModX(~divisor=width)
         -> getTrees
         -> treeToNumber
         -> sum

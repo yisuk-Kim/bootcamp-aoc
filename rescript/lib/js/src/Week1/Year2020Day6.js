@@ -58,9 +58,7 @@ function getUnion(answer) {
 }
 
 function countQuestionNumber(question) {
-  return Belt_Array.map(question, (function (xs) {
-                return xs.length;
-              }));
+  return question.length;
 }
 
 function sum(num) {
@@ -69,10 +67,8 @@ function sum(num) {
               }));
 }
 
-var question = Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getUnion);
-
-console.log(sum(Belt_Array.map(question, (function (xs) {
-                return xs.length;
+console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getUnion), (function (x) {
+                return x.length;
               }))));
 
 function getIntersection(answer) {
@@ -87,10 +83,8 @@ function getIntersection(answer) {
               }));
 }
 
-var question$1 = Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getIntersection);
-
-console.log(sum(Belt_Array.map(question$1, (function (xs) {
-                return xs.length;
+console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getIntersection), (function (x) {
+                return x.length;
               }))));
 
 exports.input = input;

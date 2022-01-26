@@ -18,23 +18,21 @@ var inputArray = Belt_Array.map(input.split("\n"), (function (x) {
       }));
 
 function splitRowColumn(input) {
-  return Belt_Array.map(input, (function (xa) {
-                return Belt_Array.partition(xa, (function (x) {
-                              if (x === "F") {
-                                return true;
-                              } else {
-                                return x === "B";
-                              }
-                            }));
+  return Belt_Array.partition(input, (function (x) {
+                if (x === "F") {
+                  return true;
+                } else {
+                  return x === "B";
+                }
               }));
 }
 
 function infoToNum(info, upCode) {
   return Belt_Array.reduceWithIndex(info, 0, (function (acc, v, i) {
                 var exp = info.length - (i + 1 | 0) | 0;
-                var range = Math.pow(2, exp);
+                var increment = Math.pow(2, exp);
                 if (Caml_obj.caml_equal(v, upCode)) {
-                  return acc + range | 0;
+                  return acc + increment | 0;
                 } else {
                   return acc;
                 }
@@ -42,27 +40,23 @@ function infoToNum(info, upCode) {
 }
 
 function getSeatNum(splitInfo) {
-  return Belt_Array.map(splitInfo, (function (x) {
-                var rowNum = infoToNum(x[0], "B");
-                var columnNum = infoToNum(x[1], "R");
-                return [
-                        rowNum,
-                        columnNum
-                      ];
-              }));
+  var rowNum = infoToNum(splitInfo[0], "B");
+  var columnNum = infoToNum(splitInfo[1], "R");
+  return [
+          rowNum,
+          columnNum
+        ];
 }
 
-function getSeatId(num) {
-  return Belt_Array.map(num, (function (x) {
-                return (Caml_array.get(x, 0) << 3) + Caml_array.get(x, 1) | 0;
-              }));
+function getSeatId(seatNum) {
+  return (Caml_array.get(seatNum, 0) << 3) + Caml_array.get(seatNum, 1) | 0;
 }
 
 function getMaxId(ids) {
   return Caml_splice_call.spliceApply(Math.max, [ids]);
 }
 
-var seatIds = getSeatId(getSeatNum(splitRowColumn(inputArray)));
+var seatIds = Belt_Array.map(Belt_Array.map(Belt_Array.map(inputArray, splitRowColumn), getSeatNum), getSeatId);
 
 console.log(Caml_splice_call.spliceApply(Math.max, [seatIds]));
 
