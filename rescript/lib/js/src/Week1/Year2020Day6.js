@@ -3,40 +3,17 @@
 
 var Fs = require("fs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
-var Caml_array = require("rescript/lib/js/caml_array.js");
+var Caml_option = require("rescript/lib/js/caml_option.js");
+var Belt_SetString = require("rescript/lib/js/belt_SetString.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day6.input.txt", "utf8");
 
-function splitInput(data) {
-  return data.split("\n");
-}
-
-function getBlankPos(data) {
-  return Belt_Array.keep(Belt_Array.mapWithIndex(data, (function (i, x) {
-                    if (x === "") {
-                      return i;
-                    } else {
-                      return 0;
-                    }
-                  })), (function (x) {
-                return x !== 0;
-              }));
-}
-
-function getGroupSize(front, back) {
-  return (back - front | 0) - 1 | 0;
-}
-
 function splitGroup(data) {
-  var blankPos = Belt_Array.concat(getBlankPos(data), [data.length]);
-  return Belt_Array.mapWithIndex(blankPos, (function (i, x) {
-                if (i !== 0) {
-                  var groupSize = getGroupSize(Caml_array.get(blankPos, i - 1 | 0), x);
-                  return Belt_Array.slice(data, Caml_array.get(blankPos, i - 1 | 0) + 1 | 0, groupSize);
-                }
-                var groupSize$1 = getGroupSize(-1, x);
-                return Belt_Array.slice(data, 0, groupSize$1);
-              }));
+  return data.split("\n\n");
+}
+
+function splitPerson(data) {
+  return data.split("\n");
 }
 
 function splitAnswer(answer) {
@@ -45,16 +22,16 @@ function splitAnswer(answer) {
               }));
 }
 
+function answerArrayToSet(answer) {
+  return Belt_Array.map(answer, Belt_SetString.fromArray);
+}
+
 function getUnion(answer) {
-  return Belt_Array.reduceWithIndex(answer, [], (function (acc, xs, i) {
-                if (i === 0) {
-                  return xs;
-                } else {
-                  return Belt_Array.concat(Belt_Array.keep(xs, (function (x) {
-                                    return !acc.includes(x);
-                                  })), acc);
-                }
-              }));
+  return Belt_Array.reduce(answer, undefined, Belt_SetString.union);
+}
+
+function answerSetToArray(answer) {
+  return Belt_Array.map(answer, Belt_SetString.toArray);
 }
 
 function countQuestionNumber(question) {
@@ -67,34 +44,38 @@ function sum(num) {
               }));
 }
 
-console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getUnion), (function (x) {
+var answerSet = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n\n"), (function (x) {
+                return x.split("\n");
+              })), splitAnswer), (function (x) {
+        return Belt_Array.map(x, Belt_SetString.fromArray);
+      }));
+
+var answer = Belt_Array.map(answerSet, getUnion);
+
+console.log(sum(Belt_Array.map(Belt_Array.map(answer, Belt_SetString.toArray), (function (x) {
                 return x.length;
               }))));
 
 function getIntersection(answer) {
-  return Belt_Array.reduceWithIndex(answer, [], (function (acc, xs, i) {
-                if (i === 0) {
-                  return xs;
-                } else {
-                  return Belt_Array.keep(acc, (function (x) {
-                                return xs.includes(x);
-                              }));
-                }
-              }));
+  var set = Belt_Array.get(answer, 0);
+  return Belt_Array.reduce(answer, set !== undefined ? Caml_option.valFromOption(set) : undefined, Belt_SetString.intersect);
 }
 
-console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(splitGroup(input.split("\n")), splitAnswer), getIntersection), (function (x) {
+var answer$1 = Belt_Array.map(answerSet, getIntersection);
+
+console.log(sum(Belt_Array.map(Belt_Array.map(answer$1, Belt_SetString.toArray), (function (x) {
                 return x.length;
               }))));
 
 exports.input = input;
-exports.splitInput = splitInput;
-exports.getBlankPos = getBlankPos;
-exports.getGroupSize = getGroupSize;
 exports.splitGroup = splitGroup;
+exports.splitPerson = splitPerson;
 exports.splitAnswer = splitAnswer;
+exports.answerArrayToSet = answerArrayToSet;
 exports.getUnion = getUnion;
+exports.answerSetToArray = answerSetToArray;
 exports.countQuestionNumber = countQuestionNumber;
 exports.sum = sum;
+exports.answerSet = answerSet;
 exports.getIntersection = getIntersection;
 /* input Not a pure module */

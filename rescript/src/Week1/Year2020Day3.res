@@ -30,12 +30,12 @@ let rec getFootprints = (slope, footprints) => {
 // plus = x => y => x + y
 // plus3 = plus(3)
 
-let setModX1 = (d, pos) => {
+let setModX = (d, pos) => {
   let (x,y) = pos
   (mod(x, d),y)
 }
 
-let setModWidth = setModX1(width)
+let setModWidth = setModX(width)
 
 let getTrees = (pos) => pos -> Belt.Array.map(((x,y)) => Js.String.get(inputArray[y],x))
 

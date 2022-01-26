@@ -35,7 +35,7 @@ function getFootprints(slope, _footprints) {
   };
 }
 
-function setModX1(d, pos) {
+function setModX(d, pos) {
   return [
           Caml_int32.mod_(pos[0], d),
           pos[1]
@@ -43,7 +43,7 @@ function setModX1(d, pos) {
 }
 
 function setModWidth(param) {
-  return setModX1(width, param);
+  return setModX(width, param);
 }
 
 function getTrees(pos) {
@@ -75,7 +75,7 @@ console.log(sum(treeToNumber(getTrees(Belt_Array.map(getFootprints([
                             0,
                             0
                           ]]), (function (x) {
-                        return setModX1(width, x);
+                        return setModX(width, x);
                       }))))));
 
 var slope = [
@@ -112,7 +112,7 @@ console.log(multiply(Belt_Array.map(slope, (function (x) {
                                               0,
                                               0
                                             ]]), (function (x) {
-                                          return setModX1(width, x);
+                                          return setModX(width, x);
                                         })))));
               }))));
 
@@ -121,7 +121,7 @@ exports.splitInput = splitInput;
 exports.inputArray = inputArray;
 exports.width = width;
 exports.getFootprints = getFootprints;
-exports.setModX1 = setModX1;
+exports.setModX = setModX;
 exports.setModWidth = setModWidth;
 exports.getTrees = getTrees;
 exports.treeToNumber = treeToNumber;
