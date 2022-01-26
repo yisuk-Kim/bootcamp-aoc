@@ -2,7 +2,10 @@
 'use strict';
 
 var Fs = require("fs");
+var Caml_obj = require("rescript/lib/js/caml_obj.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
+var Caml_array = require("rescript/lib/js/caml_array.js");
+var Caml_splice_call = require("rescript/lib/js/caml_splice_call.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day5.input.txt", "utf8");
 
@@ -14,23 +17,83 @@ var inputArray = Belt_Array.map(input.split("\n"), (function (x) {
         return x.split("");
       }));
 
-console.log(inputArray);
-
-function getRowInfo(info) {
-  return Belt_Array.slice(info, 0, 7);
-}
-
-function getRowNum(rowInfo) {
-  return Belt_Array.reduceWithIndex(rowInfo, 0, (function (acc, v, i) {
-                var exp = rowInfo.length - i | 0;
-                Math.pow(2, exp);
-                return acc + v | 0;
+function splitRowColumn(input) {
+  return Belt_Array.map(input, (function (xa) {
+                return Belt_Array.partition(xa, (function (x) {
+                              if (x === "F") {
+                                return true;
+                              } else {
+                                return x === "B";
+                              }
+                            }));
               }));
 }
+
+function infoToNum(info, upCode) {
+  return Belt_Array.reduceWithIndex(info, 0, (function (acc, v, i) {
+                var exp = info.length - (i + 1 | 0) | 0;
+                var range = Math.pow(2, exp);
+                if (Caml_obj.caml_equal(v, upCode)) {
+                  return acc + range | 0;
+                } else {
+                  return acc;
+                }
+              }));
+}
+
+function getSeatNum(splitInfo) {
+  return Belt_Array.map(splitInfo, (function (x) {
+                var rowNum = infoToNum(x[0], "B");
+                var columnNum = infoToNum(x[1], "R");
+                return [
+                        rowNum,
+                        columnNum
+                      ];
+              }));
+}
+
+function getSeatId(num) {
+  return Belt_Array.map(num, (function (x) {
+                return (Caml_array.get(x, 0) << 3) + Caml_array.get(x, 1) | 0;
+              }));
+}
+
+function getMaxId(ids) {
+  return Caml_splice_call.spliceApply(Math.max, [ids]);
+}
+
+var seatIds = getSeatId(getSeatNum(splitRowColumn(inputArray)));
+
+console.log(Caml_splice_call.spliceApply(Math.max, [seatIds]));
+
+function getMinId(ids) {
+  return Caml_splice_call.spliceApply(Math.min, [ids]);
+}
+
+var maxId = Caml_splice_call.spliceApply(Math.max, [seatIds]);
+
+var minId = Caml_splice_call.spliceApply(Math.min, [seatIds]);
+
+function getEmptyId(ids) {
+  var seatIdRange = Belt_Array.range(minId, maxId);
+  return Belt_Array.keep(seatIdRange, (function (x) {
+                return !ids.includes(x);
+              }));
+}
+
+console.log(getEmptyId(seatIds));
 
 exports.input = input;
 exports.splitInput = splitInput;
 exports.inputArray = inputArray;
-exports.getRowInfo = getRowInfo;
-exports.getRowNum = getRowNum;
+exports.splitRowColumn = splitRowColumn;
+exports.infoToNum = infoToNum;
+exports.getSeatNum = getSeatNum;
+exports.getSeatId = getSeatId;
+exports.getMaxId = getMaxId;
+exports.seatIds = seatIds;
+exports.getMinId = getMinId;
+exports.maxId = maxId;
+exports.minId = minId;
+exports.getEmptyId = getEmptyId;
 /* input Not a pure module */
