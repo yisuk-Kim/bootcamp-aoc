@@ -21,56 +21,34 @@ function getFootprints(slope, _footprints) {
     var footprints = _footprints;
     var length = footprints.length;
     var lastPos = Caml_array.get(footprints, length - 1 | 0);
-    if ((Caml_array.get(lastPos, 1) + Caml_array.get(slope, 1) | 0) >= inputArray.length) {
+    var slopeY = slope[1];
+    var y = lastPos[1];
+    if ((y + slopeY | 0) >= inputArray.length) {
       return footprints;
     }
     var $$new = Belt_Array.concat(footprints, [[
-            Caml_array.get(lastPos, 0) + Caml_array.get(slope, 0) | 0,
-            Caml_array.get(lastPos, 1) + Caml_array.get(slope, 1) | 0
+            lastPos[0] + slope[0] | 0,
+            y + slopeY | 0
           ]]);
     _footprints = $$new;
     continue ;
   };
 }
 
-function setModX(pos, d) {
-  return Belt_Array.map(pos, (function (param) {
-                if (param.length !== 2) {
-                  throw {
-                        RE_EXN_ID: "Match_failure",
-                        _1: [
-                          "Year2020Day3.res",
-                          23,
-                          60
-                        ],
-                        Error: new Error()
-                      };
-                }
-                var x = param[0];
-                var y = param[1];
-                return [
-                        Caml_int32.mod_(x, d),
-                        y
-                      ];
-              }));
+function setModX1(d, pos) {
+  return [
+          Caml_int32.mod_(pos[0], d),
+          pos[1]
+        ];
+}
+
+function setModWidth(param) {
+  return setModX1(width, param);
 }
 
 function getTrees(pos) {
   return Belt_Array.map(pos, (function (param) {
-                if (param.length !== 2) {
-                  throw {
-                        RE_EXN_ID: "Match_failure",
-                        _1: [
-                          "Year2020Day3.res",
-                          25,
-                          46
-                        ],
-                        Error: new Error()
-                      };
-                }
-                var x = param[0];
-                var y = param[1];
-                return Caml_array.get(inputArray, y)[x];
+                return Caml_array.get(inputArray, param[1])[param[0]];
               }));
 }
 
@@ -90,13 +68,15 @@ function sum(numbers) {
               }));
 }
 
-console.log(sum(treeToNumber(getTrees(setModX(getFootprints([
+console.log(sum(treeToNumber(getTrees(Belt_Array.map(getFootprints([
                           3,
                           1
                         ], [[
                             0,
                             0
-                          ]]), width)))));
+                          ]]), (function (x) {
+                        return setModX1(width, x);
+                      }))))));
 
 var slope = [
   [
@@ -128,10 +108,12 @@ function multiply(numbers) {
 }
 
 console.log(multiply(Belt_Array.map(slope, (function (x) {
-                return sum(treeToNumber(getTrees(setModX(getFootprints(x, [[
+                return sum(treeToNumber(getTrees(Belt_Array.map(getFootprints(x, [[
                                               0,
                                               0
-                                            ]]), width))));
+                                            ]]), (function (x) {
+                                          return setModX1(width, x);
+                                        })))));
               }))));
 
 exports.input = input;
@@ -139,7 +121,8 @@ exports.splitInput = splitInput;
 exports.inputArray = inputArray;
 exports.width = width;
 exports.getFootprints = getFootprints;
-exports.setModX = setModX;
+exports.setModX1 = setModX1;
+exports.setModWidth = setModWidth;
 exports.getTrees = getTrees;
 exports.treeToNumber = treeToNumber;
 exports.sum = sum;
