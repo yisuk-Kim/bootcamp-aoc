@@ -47,7 +47,7 @@ function handleOption(opt) {
 }
 
 function getMaxId2(ids) {
-  var opt = Belt_Array.get(Belt_SortArrayInt.stableSort(ids), ids.length - 1 | 0);
+  var opt = Belt_Array.get(Belt_Array.reverse(Belt_SortArrayInt.stableSort(ids)), 0);
   if (opt !== undefined) {
     return opt;
   } else {

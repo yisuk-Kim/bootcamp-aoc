@@ -36,7 +36,8 @@ let handleOption = (opt) => switch opt {
 }
 
 let getMaxId2 = (ids) => ids->Belt.SortArray.Int.stableSort
-                            ->Belt.Array.get(Belt.Array.length(ids)-1)
+                            ->Belt.Array.reverse
+                            ->Belt.Array.get(0)
                             ->handleOption
 
 let seatIds = input -> splitNewLine
