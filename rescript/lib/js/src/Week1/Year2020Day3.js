@@ -3,7 +3,6 @@
 
 var Fs = require("fs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
-var Caml_array = require("rescript/lib/js/caml_array.js");
 var Caml_int32 = require("rescript/lib/js/caml_int32.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day3.input.txt", "utf8");
@@ -14,13 +13,19 @@ function splitInput(pattern) {
 
 var inputArray = input.split("\n");
 
-var width = Caml_array.get(inputArray, 0).length;
+var string = Belt_Array.get(inputArray, 0);
+
+var width = string !== undefined ? string.length : 0;
 
 function getFootprints(slope, _footprints) {
   while(true) {
     var footprints = _footprints;
     var length = footprints.length;
-    var lastPos = Caml_array.get(footprints, length - 1 | 0);
+    var pos = Belt_Array.get(footprints, length - 1 | 0);
+    var lastPos = pos !== undefined ? pos : [
+        0,
+        0
+      ];
     var slopeY = slope[1];
     var y = lastPos[1];
     if ((y + slopeY | 0) >= inputArray.length) {
@@ -35,6 +40,13 @@ function getFootprints(slope, _footprints) {
   };
 }
 
+function getFootprintsFromOrigin(__x) {
+  return getFootprints(__x, [[
+                0,
+                0
+              ]]);
+}
+
 function setModX(d, pos) {
   return [
           Caml_int32.mod_(pos[0], d),
@@ -46,20 +58,21 @@ function setModWidth(param) {
   return setModX(width, param);
 }
 
-function getTrees(pos) {
-  return Belt_Array.map(pos, (function (param) {
-                return Caml_array.get(inputArray, param[1])[param[0]];
-              }));
+function getMapInfo(pos) {
+  var string = Belt_Array.get(inputArray, pos[1]);
+  if (string !== undefined) {
+    return string[pos[0]];
+  } else {
+    return "";
+  }
 }
 
-function treeToNumber(trees) {
-  return Belt_Array.map(trees, (function (v) {
-                if (v === "#") {
-                  return 1;
-                } else {
-                  return 0;
-                }
-              }));
+function infoToNumber(tree) {
+  if (tree === "#") {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 function sum(numbers) {
@@ -68,15 +81,12 @@ function sum(numbers) {
               }));
 }
 
-console.log(sum(treeToNumber(getTrees(Belt_Array.map(getFootprints([
+console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(getFootprintsFromOrigin([
                           3,
                           1
-                        ], [[
-                            0,
-                            0
-                          ]]), (function (x) {
+                        ]), (function (x) {
                         return setModX(width, x);
-                      }))))));
+                      })), getMapInfo), infoToNumber)));
 
 var slope = [
   [
@@ -108,12 +118,9 @@ function multiply(numbers) {
 }
 
 console.log(multiply(Belt_Array.map(slope, (function (x) {
-                return sum(treeToNumber(getTrees(Belt_Array.map(getFootprints(x, [[
-                                              0,
-                                              0
-                                            ]]), (function (x) {
+                return sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(getFootprintsFromOrigin(x), (function (x) {
                                           return setModX(width, x);
-                                        })))));
+                                        })), getMapInfo), infoToNumber));
               }))));
 
 exports.input = input;
@@ -121,10 +128,11 @@ exports.splitInput = splitInput;
 exports.inputArray = inputArray;
 exports.width = width;
 exports.getFootprints = getFootprints;
+exports.getFootprintsFromOrigin = getFootprintsFromOrigin;
 exports.setModX = setModX;
 exports.setModWidth = setModWidth;
-exports.getTrees = getTrees;
-exports.treeToNumber = treeToNumber;
+exports.getMapInfo = getMapInfo;
+exports.infoToNumber = infoToNumber;
 exports.sum = sum;
 exports.slope = slope;
 exports.multiply = multiply;

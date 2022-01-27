@@ -17,26 +17,16 @@ function splitPerson(data) {
 }
 
 function splitAnswer(answer) {
-  return Belt_Array.map(answer, (function (x) {
-                return x.split("");
-              }));
+  return answer.split("");
 }
 
-function answerArrayToSet(answer) {
-  return Belt_Array.map(answer, Belt_SetString.fromArray);
-}
+var answerArrayToSet = Belt_SetString.fromArray;
 
 function getUnion(answer) {
   return Belt_Array.reduce(answer, undefined, Belt_SetString.union);
 }
 
-function answerSetToArray(answer) {
-  return Belt_Array.map(answer, Belt_SetString.toArray);
-}
-
-function countQuestionNumber(question) {
-  return question.length;
-}
+var getSize = Belt_SetString.size;
 
 function sum(num) {
   return Belt_Array.reduce(num, 0, (function (acc, x) {
@@ -46,26 +36,22 @@ function sum(num) {
 
 var answerSet = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n\n"), (function (x) {
                 return x.split("\n");
-              })), splitAnswer), (function (x) {
-        return Belt_Array.map(x, Belt_SetString.fromArray);
+              })), (function (xs) {
+            return Belt_Array.map(xs, (function (x) {
+                          return x.split("");
+                        }));
+          })), (function (xs) {
+        return Belt_Array.map(xs, Belt_SetString.fromArray);
       }));
 
-var answer = Belt_Array.map(answerSet, getUnion);
-
-console.log(sum(Belt_Array.map(Belt_Array.map(answer, Belt_SetString.toArray), (function (x) {
-                return x.length;
-              }))));
+console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getUnion), Belt_SetString.size)));
 
 function getIntersection(answer) {
   var set = Belt_Array.get(answer, 0);
   return Belt_Array.reduce(answer, set !== undefined ? Caml_option.valFromOption(set) : undefined, Belt_SetString.intersect);
 }
 
-var answer$1 = Belt_Array.map(answerSet, getIntersection);
-
-console.log(sum(Belt_Array.map(Belt_Array.map(answer$1, Belt_SetString.toArray), (function (x) {
-                return x.length;
-              }))));
+console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getIntersection), Belt_SetString.size)));
 
 exports.input = input;
 exports.splitGroup = splitGroup;
@@ -73,8 +59,7 @@ exports.splitPerson = splitPerson;
 exports.splitAnswer = splitAnswer;
 exports.answerArrayToSet = answerArrayToSet;
 exports.getUnion = getUnion;
-exports.answerSetToArray = answerSetToArray;
-exports.countQuestionNumber = countQuestionNumber;
+exports.getSize = getSize;
 exports.sum = sum;
 exports.answerSet = answerSet;
 exports.getIntersection = getIntersection;

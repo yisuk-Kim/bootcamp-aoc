@@ -4,27 +4,26 @@
 var Fs = require("fs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Caml_splice_call = require("rescript/lib/js/caml_splice_call.js");
+var Belt_SortArrayInt = require("rescript/lib/js/belt_SortArrayInt.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day5.input.txt", "utf8");
 
-function splitInput(pattern) {
+function splitNewLine(pattern) {
   return pattern.split("\n");
 }
 
-var inputArray = Belt_Array.map(input.split("\n"), (function (x) {
-        return x.split("");
-      }));
+function stringToArray(str) {
+  return str.split("");
+}
 
-function infoToNum(info) {
-  return Belt_Array.map(info, (function (xs) {
-                switch (xs) {
-                  case "B" :
-                  case "R" :
-                      return 1;
-                  default:
-                    return 0;
-                }
-              }));
+function infoToBinary(info) {
+  switch (info) {
+    case "B" :
+    case "R" :
+        return 1;
+    default:
+      return 0;
+  }
 }
 
 function getSeatId(num) {
@@ -39,15 +38,36 @@ function getMaxId(ids) {
   return Caml_splice_call.spliceApply(Math.max, [ids]);
 }
 
-var seatIds = Belt_Array.map(Belt_Array.map(inputArray, infoToNum), getSeatId);
+function handleOption(opt) {
+  if (opt !== undefined) {
+    return opt;
+  } else {
+    return 0;
+  }
+}
 
-console.log(Caml_splice_call.spliceApply(Math.max, [seatIds]));
+function getMaxId2(ids) {
+  var opt = Belt_Array.get(Belt_SortArrayInt.stableSort(ids), ids.length - 1 | 0);
+  if (opt !== undefined) {
+    return opt;
+  } else {
+    return 0;
+  }
+}
+
+var seatIds = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), (function (x) {
+                return x.split("");
+              })), (function (xs) {
+            return Belt_Array.map(xs, infoToBinary);
+          })), getSeatId);
+
+console.log(getMaxId2(seatIds));
 
 function getMinId(ids) {
   return Caml_splice_call.spliceApply(Math.min, [ids]);
 }
 
-var maxId = Caml_splice_call.spliceApply(Math.max, [seatIds]);
+var maxId = getMaxId2(seatIds);
 
 var minId = Caml_splice_call.spliceApply(Math.min, [seatIds]);
 
@@ -58,17 +78,52 @@ function getEmptyId(ids) {
               }));
 }
 
-console.log(getEmptyId(seatIds));
+function setSlidingWindow(ids) {
+  return Belt_Array.mapWithIndex(ids, (function (i, x) {
+                var num = Belt_Array.get(ids, i + 1 | 0);
+                if (num !== undefined) {
+                  return [
+                          x,
+                          num
+                        ];
+                } else {
+                  return [
+                          x,
+                          x + 1 | 0
+                        ];
+                }
+              }));
+}
+
+function getEmptySeatIds(idPairs) {
+  return Belt_Array.map(idPairs, (function (xs) {
+                return Belt_Array.range(xs[0] + 1 | 0, xs[1] - 1 | 0);
+              }));
+}
+
+function getDiff(idPair) {
+  return idPair[1] - idPair[0] | 0;
+}
+
+var concatSeatId = Belt_Array.concatMany;
+
+console.log(Belt_Array.concatMany(getEmptySeatIds(setSlidingWindow(Belt_SortArrayInt.stableSort(seatIds)))));
 
 exports.input = input;
-exports.splitInput = splitInput;
-exports.inputArray = inputArray;
-exports.infoToNum = infoToNum;
+exports.splitNewLine = splitNewLine;
+exports.stringToArray = stringToArray;
+exports.infoToBinary = infoToBinary;
 exports.getSeatId = getSeatId;
 exports.getMaxId = getMaxId;
+exports.handleOption = handleOption;
+exports.getMaxId2 = getMaxId2;
 exports.seatIds = seatIds;
 exports.getMinId = getMinId;
 exports.maxId = maxId;
 exports.minId = minId;
 exports.getEmptyId = getEmptyId;
+exports.setSlidingWindow = setSlidingWindow;
+exports.getEmptySeatIds = getEmptySeatIds;
+exports.getDiff = getDiff;
+exports.concatSeatId = concatSeatId;
 /* input Not a pure module */

@@ -1,14 +1,22 @@
+open Belt
+
 let input = Node.Fs.readFileAsUtf8Sync("input/Week1/Year2020Day3.input.txt")
 
 let splitInput = (pattern) => Js.String.split("\n", pattern)
 
 let inputArray = input -> splitInput
 
-let width = Js.String.length(inputArray[0])
+let width = switch inputArray[0] {
+    | None => 0
+    | Some(string) => Js.String.length(string)
+}
 
 let rec getFootprints = (slope, footprints) => {
     let length = footprints -> Belt.Array.length
-    let lastPos = footprints[length - 1]
+    let lastPos = switch footprints[length - 1] {
+        | None => (0,0)
+        | Some(pos) => pos
+    }
     
     let (x,y) = lastPos
     let (slopeX, slopeY) = slope
@@ -24,6 +32,8 @@ let rec getFootprints = (slope, footprints) => {
     }
 }
 
+let getFootprintsFromOrigin = getFootprints(_, [(0,0)]) 
+
 // Currying
 // setModX :: array<array<int>> => int => array<array<int>>
 // let setModXWithPos = setModX(pos) :: int => array<array<int>>
@@ -37,36 +47,41 @@ let setModX = (d, pos) => {
 
 let setModWidth = setModX(width)
 
-let getTrees = (pos) => pos -> Belt.Array.map(((x,y)) => Js.String.get(inputArray[y],x))
+// None -> case handle??
+let getMapInfo = (pos) => {
+    let (x,y) = pos
+    switch inputArray[y] {
+        | None => ""
+        | Some(string) => Js.String.get(string,x)
+    }
+}
 
-let treeToNumber = (trees) => trees -> Belt.Array.map((v) => 
-    switch v {
+let infoToNumber = (tree) => switch tree {
     | "#" => 1
     | _ => 0
-    }
-)
+}
 
 let sum = (numbers) => numbers -> Belt.Array.reduce(0, (acc, value) => acc + value)
 
-(3,1) -> getFootprints([(0,0)])
+(3,1) -> getFootprintsFromOrigin
     -> Belt.Array.map((x) => x->setModWidth)
-    -> getTrees
-    -> treeToNumber
+    -> Belt.Array.map((x) => x->getMapInfo)
+    -> Belt.Array.map((x) => x->infoToNumber)
     -> sum
     -> Js.log
 
-// part 2
 
+// part 2
 let slope = [(1,1), (3,1), (5,1), (7,1), (1,2)];
 
-let multiply = (numbers) => Belt.Array.reduce(numbers, 1, (acc, value) => acc * value)
+let multiply = (numbers) => numbers -> Belt.Array.reduce(1, (acc, value) => acc * value)
 
-slope -> Belt.Array.map((x) => {
-        x -> getFootprints([(0,0)])
+slope -> Belt.Array.map((x) => 
+        x -> getFootprintsFromOrigin
         -> Belt.Array.map((x) => x->setModWidth)
-        -> getTrees
-        -> treeToNumber
+        -> Belt.Array.map((x) => x->getMapInfo)
+        -> Belt.Array.map((x) => x->infoToNumber)
         -> sum
-    })
+    )
     -> multiply
     -> Js.log

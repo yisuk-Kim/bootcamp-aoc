@@ -1,3 +1,5 @@
+open Belt
+
 let input = Node.Fs.readFileAsUtf8Sync("input/Week1/Year2020Day5.input.txt")
 
 // BFFBBBFLLR
@@ -9,18 +11,15 @@ let input = Node.Fs.readFileAsUtf8Sync("input/Week1/Year2020Day5.input.txt")
 // BFFBBBFLLR
 // 0110001001
 
-let splitInput = (pattern) => Js.String.split("\n", pattern)
+let splitNewLine = (pattern) => Js.String.split("\n", pattern)
+let stringToArray = (str) => Js.String.split("",str)
 
-let inputArray = input -> splitInput
-                    -> Belt.Array.map((x) => Js.String.split("",x))
-
-let infoToNum = (info) => info -> Belt.Array.map((xs) => 
-    switch xs {
+let infoToBinary = (info) => switch info {
     | "B" => 1
     | "R" => 1
     | _ => 0
-    }
-)
+}
+
 
 let getSeatId = (num) => num -> Belt.Array.reduceWithIndex(0, (acc, v, i) => {
     let exp = Belt.Array.length(num) - (i+1)
@@ -28,14 +27,26 @@ let getSeatId = (num) => num -> Belt.Array.reduceWithIndex(0, (acc, v, i) => {
     acc + v * increment
 })
 
+
 let getMaxId = (ids) => Js.Math.maxMany_int(ids)
 
+let handleOption = (opt) => switch opt {
+| None => 0
+| Some(num) => num
+}
 
-let seatIds = inputArray 
-            ->Belt.Array.map((x)=> x->infoToNum)
-            ->Belt.Array.map((x) => x->getSeatId)
+let getMaxId2 = (ids) => ids->Belt.SortArray.Int.stableSort
+                            ->Belt.Array.get(Belt.Array.length(ids)-1)
+                            ->handleOption
+
+let seatIds = input -> splitNewLine
+            -> Belt.Array.map((x) => x->stringToArray) 
+            -> Belt.Array.map((xs)=> xs 
+                -> Belt.Array.map((x) => x->infoToBinary)
+            )
+            -> Belt.Array.map((x) => x->getSeatId)
             
-seatIds -> getMaxId 
+seatIds -> getMaxId2
     -> Js.log
 
 // part2
@@ -46,7 +57,7 @@ seatIds -> getMaxId
 
 let getMinId = (ids) => Js.Math.minMany_int(ids)
 
-let maxId = seatIds -> getMaxId
+let maxId = seatIds -> getMaxId2
 let minId = seatIds -> getMinId
 
 let getEmptyId = (ids) => {
@@ -54,5 +65,27 @@ let getEmptyId = (ids) => {
     seatIdRange -> Belt.Array.keep((x) => !Js.Array.includes(x, ids))
 }
 
-seatIds -> getEmptyId
-        -> Js.log
+let setSlidingWindow = (ids) => ids -> Belt.Array.mapWithIndex((i, x) => {
+    switch ids[i+1] {
+    | None => (x,x+1)
+    | Some(num) => (x, num)
+    }
+})
+
+let getEmptySeatIds = (idPairs) => idPairs -> Belt.Array.map((xs) => {
+    let (x,y) = xs
+    Belt.Array.range(x+1, y-1)
+})
+
+let getDiff = (idPair) => {
+    let (x,y) = idPair
+    y-x
+}
+
+let concatSeatId = (idPairs) => idPairs -> Belt.Array.concatMany
+
+seatIds -> Belt.SortArray.Int.stableSort
+    -> setSlidingWindow
+    -> getEmptySeatIds
+    -> concatSeatId
+    -> Js.log
