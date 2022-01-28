@@ -1,5 +1,3 @@
-open Belt
-
 let input = Node.Fs.readFileAsUtf8Sync("input/Week1/Year2020Day6.input.txt")
 
 let splitGroup = data => Js.String.split("\n\n", data)
