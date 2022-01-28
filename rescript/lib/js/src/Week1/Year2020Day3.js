@@ -4,6 +4,7 @@
 var Fs = require("fs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Caml_int32 = require("rescript/lib/js/caml_int32.js");
+var Belt_Option = require("rescript/lib/js/belt_Option.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day3.input.txt", "utf8");
 
@@ -13,19 +14,18 @@ function splitInput(pattern) {
 
 var inputArray = input.split("\n");
 
-var string = Belt_Array.get(inputArray, 0);
-
-var width = string !== undefined ? string.length : 0;
+var width = Belt_Option.mapWithDefault(Belt_Array.get(inputArray, 0), 0, (function (prim) {
+        return prim.length;
+      }));
 
 function getFootprints(slope, _footprints) {
   while(true) {
     var footprints = _footprints;
     var length = footprints.length;
-    var pos = Belt_Array.get(footprints, length - 1 | 0);
-    var lastPos = pos !== undefined ? pos : [
-        0,
-        0
-      ];
+    var lastPos = Belt_Option.getWithDefault(Belt_Array.get(footprints, length - 1 | 0), [
+          0,
+          0
+        ]);
     var slopeY = slope[1];
     var y = lastPos[1];
     if ((y + slopeY | 0) >= inputArray.length) {
@@ -59,12 +59,10 @@ function setModWidth(param) {
 }
 
 function getMapInfo(pos) {
-  var string = Belt_Array.get(inputArray, pos[1]);
-  if (string !== undefined) {
-    return string[pos[0]];
-  } else {
-    return "";
-  }
+  var x = pos[0];
+  return Belt_Option.mapWithDefault(Belt_Array.get(inputArray, pos[1]), "", (function (str) {
+                return str[x];
+              }));
 }
 
 function infoToNumber(tree) {
@@ -84,9 +82,7 @@ function sum(numbers) {
 console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(getFootprintsFromOrigin([
                           3,
                           1
-                        ]), (function (x) {
-                        return setModX(width, x);
-                      })), getMapInfo), infoToNumber)));
+                        ]), setModWidth), getMapInfo), infoToNumber)));
 
 var slope = [
   [
@@ -118,9 +114,7 @@ function multiply(numbers) {
 }
 
 console.log(multiply(Belt_Array.map(slope, (function (x) {
-                return sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(getFootprintsFromOrigin(x), (function (x) {
-                                          return setModX(width, x);
-                                        })), getMapInfo), infoToNumber));
+                return sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(getFootprintsFromOrigin(x), setModWidth), getMapInfo), infoToNumber));
               }))));
 
 exports.input = input;

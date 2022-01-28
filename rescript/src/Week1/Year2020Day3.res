@@ -6,17 +6,25 @@ let splitInput = (pattern) => Js.String.split("\n", pattern)
 
 let inputArray = input -> splitInput
 
-let width = switch inputArray[0] {
-    | None => 0
-    | Some(string) => Js.String.length(string)
-}
+// Map의 의미
+// apply :: (a -> b) -> a -> b
+// getLength :: string -> number
+// getLength = (str) => str.length
+// map(getLength, ["test", "123"])
+// getLength(["test", "123"])
+// apply(getLength, "test")
+// map :: (a -> b) -> Array<a> -> Array<b>
+// map :: (a -> b) -> Option<a> -> Option<b>
+// then :: (a -> b) -> Promise<a> -> Promise<b>
+
+// option<a> -> a -> a
+
+let width = inputArray[0] -> Belt.Option.mapWithDefault(0, Js.String.length)
 
 let rec getFootprints = (slope, footprints) => {
     let length = footprints -> Belt.Array.length
-    let lastPos = switch footprints[length - 1] {
-        | None => (0,0)
-        | Some(pos) => pos
-    }
+
+    let lastPos = footprints[length - 1]  -> Belt.Option.getWithDefault((0,0))
     
     let (x,y) = lastPos
     let (slopeX, slopeY) = slope
@@ -47,13 +55,9 @@ let setModX = (d, pos) => {
 
 let setModWidth = setModX(width)
 
-// None -> case handle??
 let getMapInfo = (pos) => {
     let (x,y) = pos
-    switch inputArray[y] {
-        | None => ""
-        | Some(string) => Js.String.get(string,x)
-    }
+    inputArray[y] -> Belt.Option.mapWithDefault("", (str) => Js.String.get(str, x))
 }
 
 let infoToNumber = (tree) => switch tree {
@@ -64,9 +68,9 @@ let infoToNumber = (tree) => switch tree {
 let sum = (numbers) => numbers -> Belt.Array.reduce(0, (acc, value) => acc + value)
 
 (3,1) -> getFootprintsFromOrigin
-    -> Belt.Array.map((x) => x->setModWidth)
-    -> Belt.Array.map((x) => x->getMapInfo)
-    -> Belt.Array.map((x) => x->infoToNumber)
+    -> Belt.Array.map(setModWidth)
+    -> Belt.Array.map(getMapInfo)
+    -> Belt.Array.map(infoToNumber)
     -> sum
     -> Js.log
 
@@ -78,9 +82,9 @@ let multiply = (numbers) => numbers -> Belt.Array.reduce(1, (acc, value) => acc 
 
 slope -> Belt.Array.map((x) => 
         x -> getFootprintsFromOrigin
-        -> Belt.Array.map((x) => x->setModWidth)
-        -> Belt.Array.map((x) => x->getMapInfo)
-        -> Belt.Array.map((x) => x->infoToNumber)
+        -> Belt.Array.map(setModWidth)
+        -> Belt.Array.map(getMapInfo)
+        -> Belt.Array.map(infoToNumber)
         -> sum
     )
     -> multiply

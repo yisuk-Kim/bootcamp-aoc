@@ -3,7 +3,6 @@
 
 var Fs = require("fs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
-var Caml_option = require("rescript/lib/js/caml_option.js");
 var Belt_SetString = require("rescript/lib/js/belt_SetString.js");
 
 var input = Fs.readFileSync("input/Week1/Year2020Day6.input.txt", "utf8");
@@ -34,24 +33,23 @@ function sum(num) {
               }));
 }
 
-var answerSet = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n\n"), (function (x) {
-                return x.split("\n");
-              })), (function (xs) {
-            return Belt_Array.map(xs, (function (x) {
-                          return x.split("");
-                        }));
+var answerSet = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n\n"), splitPerson), (function (xs) {
+            return Belt_Array.map(xs, splitAnswer);
           })), (function (xs) {
-        return Belt_Array.map(xs, Belt_SetString.fromArray);
+        return Belt_Array.map(xs, answerArrayToSet);
       }));
 
-console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getUnion), Belt_SetString.size)));
+console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getUnion), getSize)));
+
+var azArray = "abcdefghijklmnopqrstuvwxyz".split("");
+
+var wholeSet = Belt_SetString.fromArray(azArray);
 
 function getIntersection(answer) {
-  var set = Belt_Array.get(answer, 0);
-  return Belt_Array.reduce(answer, set !== undefined ? Caml_option.valFromOption(set) : undefined, Belt_SetString.intersect);
+  return Belt_Array.reduce(answer, wholeSet, Belt_SetString.intersect);
 }
 
-console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getIntersection), Belt_SetString.size)));
+console.log(sum(Belt_Array.map(Belt_Array.map(answerSet, getIntersection), getSize)));
 
 exports.input = input;
 exports.splitGroup = splitGroup;
@@ -62,5 +60,7 @@ exports.getUnion = getUnion;
 exports.getSize = getSize;
 exports.sum = sum;
 exports.answerSet = answerSet;
+exports.azArray = azArray;
+exports.wholeSet = wholeSet;
 exports.getIntersection = getIntersection;
 /* input Not a pure module */

@@ -2,7 +2,9 @@
 'use strict';
 
 var Fs = require("fs");
+var Belt_List = require("rescript/lib/js/belt_List.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
+var Belt_Option = require("rescript/lib/js/belt_Option.js");
 var Caml_splice_call = require("rescript/lib/js/caml_splice_call.js");
 var Belt_SortArrayInt = require("rescript/lib/js/belt_SortArrayInt.js");
 
@@ -16,7 +18,7 @@ function stringToArray(str) {
   return str.split("");
 }
 
-function infoToBinary(info) {
+function seatSignToBinary(info) {
   switch (info) {
     case "B" :
     case "R" :
@@ -38,27 +40,12 @@ function getMaxId(ids) {
   return Caml_splice_call.spliceApply(Math.max, [ids]);
 }
 
-function handleOption(opt) {
-  if (opt !== undefined) {
-    return opt;
-  } else {
-    return 0;
-  }
-}
-
 function getMaxId2(ids) {
-  var opt = Belt_Array.get(Belt_Array.reverse(Belt_SortArrayInt.stableSort(ids)), 0);
-  if (opt !== undefined) {
-    return opt;
-  } else {
-    return 0;
-  }
+  return Belt_Option.getWithDefault(Belt_Array.get(Belt_Array.reverse(Belt_SortArrayInt.stableSort(ids)), 0), 0);
 }
 
-var seatIds = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), (function (x) {
-                return x.split("");
-              })), (function (xs) {
-            return Belt_Array.map(xs, infoToBinary);
+var seatIds = Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), stringToArray), (function (xs) {
+            return Belt_Array.map(xs, seatSignToBinary);
           })), getSeatId);
 
 console.log(getMaxId2(seatIds));
@@ -70,13 +57,6 @@ function getMinId(ids) {
 var maxId = getMaxId2(seatIds);
 
 var minId = Caml_splice_call.spliceApply(Math.min, [seatIds]);
-
-function getEmptyId(ids) {
-  var seatIdRange = Belt_Array.range(minId, maxId);
-  return Belt_Array.keep(seatIdRange, (function (x) {
-                return !ids.includes(x);
-              }));
-}
 
 function setSlidingWindow(ids) {
   return Belt_Array.mapWithIndex(ids, (function (i, x) {
@@ -107,23 +87,71 @@ function getDiff(idPair) {
 
 var concatSeatId = Belt_Array.concatMany;
 
-console.log(Belt_Array.concatMany(getEmptySeatIds(setSlidingWindow(Belt_SortArrayInt.stableSort(seatIds)))));
+function sortListAscending(data) {
+  return Belt_List.sort(data, (function (a, b) {
+                return a - b | 0;
+              }));
+}
+
+function setSlidingWindowList(_ids, _pairList) {
+  while(true) {
+    var pairList = _pairList;
+    var ids = _ids;
+    if (!ids) {
+      return pairList;
+    }
+    var otherSeatIds = ids.tl;
+    if (!otherSeatIds) {
+      return pairList;
+    }
+    var seatId2 = Belt_List.headExn(otherSeatIds);
+    var $$new = Belt_List.concat(pairList, {
+          hd: [
+            ids.hd,
+            seatId2
+          ],
+          tl: /* [] */0
+        });
+    _pairList = $$new;
+    _ids = otherSeatIds;
+    continue ;
+  };
+}
+
+function keepEmptyPair(idPairs) {
+  return Belt_List.keep(idPairs, (function (p) {
+                return getDiff(p) !== 1;
+              }));
+}
+
+function getEmptyId(idPair) {
+  return Belt_Array.range(idPair[0] + 1 | 0, idPair[1] - 1 | 0);
+}
+
+function getEmptySeatIdsList(idPairs) {
+  return Belt_List.map(idPairs, getEmptyId);
+}
+
+console.log(Belt_Array.concatMany(Belt_List.toArray(Belt_List.map(keepEmptyPair(setSlidingWindowList(sortListAscending(Belt_List.fromArray(seatIds)), /* [] */0)), getEmptyId))));
 
 exports.input = input;
 exports.splitNewLine = splitNewLine;
 exports.stringToArray = stringToArray;
-exports.infoToBinary = infoToBinary;
+exports.seatSignToBinary = seatSignToBinary;
 exports.getSeatId = getSeatId;
 exports.getMaxId = getMaxId;
-exports.handleOption = handleOption;
 exports.getMaxId2 = getMaxId2;
 exports.seatIds = seatIds;
 exports.getMinId = getMinId;
 exports.maxId = maxId;
 exports.minId = minId;
-exports.getEmptyId = getEmptyId;
 exports.setSlidingWindow = setSlidingWindow;
 exports.getEmptySeatIds = getEmptySeatIds;
 exports.getDiff = getDiff;
 exports.concatSeatId = concatSeatId;
+exports.sortListAscending = sortListAscending;
+exports.setSlidingWindowList = setSlidingWindowList;
+exports.keepEmptyPair = keepEmptyPair;
+exports.getEmptyId = getEmptyId;
+exports.getEmptySeatIdsList = getEmptySeatIdsList;
 /* input Not a pure module */

@@ -13,26 +13,27 @@ let getSize = (set) => set -> Belt.Set.String.size
 let sum = (num) => num -> Belt.Array.reduce(0, (acc, x) => acc + x)
 
 let answerSet = input -> splitGroup 
-    -> Belt.Array.map((x) => x->splitPerson) 
-    -> Belt.Array.map((xs) => xs
-        -> Belt.Array.map((x) => x -> splitAnswer)
-    )
-    -> Belt.Array.map((xs) => xs
-        -> Belt.Array.map((x) => x -> answerArrayToSet)
-    )
+    -> Belt.Array.map(splitPerson) 
+    -> Belt.Array.map((xs) => xs -> Belt.Array.map(splitAnswer))
+    -> Belt.Array.map((xs) => xs -> Belt.Array.map(answerArrayToSet))
 
-answerSet -> Belt.Array.map((x) => x -> getUnion)
-    -> Belt.Array.map((x) => x -> getSize)
+answerSet -> Belt.Array.map(getUnion)
+    -> Belt.Array.map(getSize)
     -> sum
     -> Js.log
 
 // part2
-let getIntersection = (answer) => answer -> Belt.Array.reduce(switch answer[0] {
-    | None => Belt.Set.String.empty
-    | Some(set) => set
-}, (acc, v) => Belt.Set.String.intersect(acc,v))
+let azArray = Js.String.split("", "abcdefghijklmnopqrstuvwxyz")
+let wholeSet = azArray -> Belt.Set.String.fromArray
+let getIntersection = (answer) => answer -> Belt.Array.reduce(wholeSet, (acc, v) => Belt.Set.String.intersect(acc,v)
+)
 
-answerSet -> Belt.Array.map((x) => x -> getIntersection)
-    -> Belt.Array.map((x) => x -> getSize)
+// monoid
+// +, 0
+// "" + (a + (b + ....))
+// *, 1
+
+answerSet -> Belt.Array.map(getIntersection)
+    -> Belt.Array.map(getSize)
     -> sum
     -> Js.log
