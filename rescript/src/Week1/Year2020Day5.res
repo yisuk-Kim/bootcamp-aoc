@@ -81,8 +81,7 @@ let sortListAscending = data => data->Belt.List.sort((a, b) => a - b)
 
 let rec setSlidingWindowList = (ids, pairList) => {
   switch ids {
-  | list{} => pairList
-  | list{_} => pairList
+  | list{} | list{_} => pairList
   | list{seatId1, ...otherSeatIds} => {
       let seatId2 = otherSeatIds->Belt.List.headExn
       let new = Belt.List.concat(pairList, list{(seatId1, seatId2)})
