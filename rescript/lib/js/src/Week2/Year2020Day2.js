@@ -4,17 +4,10 @@
 var Fs = require("fs");
 var Belt_Int = require("rescript/lib/js/belt_Int.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
+var Belt_Option = require("rescript/lib/js/belt_Option.js");
 var Caml_option = require("rescript/lib/js/caml_option.js");
 
 var input = Fs.readFileSync("input/Week2/Year2020Day2.input.txt", "utf8");
-
-function handleOption(input, none) {
-  if (input !== undefined) {
-    return Caml_option.valFromOption(input);
-  } else {
-    return none;
-  }
-}
 
 function splitCase(input) {
   return input.split("\n");
@@ -22,29 +15,20 @@ function splitCase(input) {
 
 function splitInfo(input) {
   return Belt_Array.map(input.split(/\s|-|:\s/), (function (x) {
-                return handleOption(x, "");
+                return Belt_Option.getWithDefault(x, "");
               }));
 }
 
 function stringToInt(str) {
-  var num = Belt_Int.fromString(str);
-  if (num !== undefined) {
-    return num;
-  } else {
-    return 0;
-  }
+  return Belt_Option.getWithDefault(Belt_Int.fromString(str), 0);
 }
 
 function arrayToPassword(info) {
-  var str = Belt_Array.get(info, 0);
-  var str$1 = Belt_Array.get(info, 1);
-  var str$2 = Belt_Array.get(info, 2);
-  var str$3 = Belt_Array.get(info, 3);
   return {
-          min: str !== undefined ? stringToInt(str) : 0,
-          max: str$1 !== undefined ? stringToInt(str$1) : 0,
-          letter: str$2 !== undefined ? str$2 : "",
-          pw: str$3 !== undefined ? str$3 : ""
+          min: Belt_Option.mapWithDefault(Belt_Array.get(info, 0), 0, stringToInt),
+          max: Belt_Option.mapWithDefault(Belt_Array.get(info, 1), 0, stringToInt),
+          letter: Belt_Option.getWithDefault(Belt_Array.get(info, 2), ""),
+          pw: Belt_Option.getWithDefault(Belt_Array.get(info, 3), "")
         };
 }
 
@@ -58,12 +42,14 @@ function isInRange(num, min, max) {
   }
 }
 
-function countOccurrence(pw) {
-  return handleOption(Caml_option.null_to_opt(pw.pw.match(new RegExp(pw.letter, "g"))), []).length;
+function countOccurrence(data) {
+  return Belt_Option.mapWithDefault(Caml_option.null_to_opt(data.pw.match(new RegExp(data.letter, "g"))), 0, (function (prim) {
+                return prim.length;
+              }));
 }
 
-function checkValidity(pw) {
-  return isInRange(countOccurrence(pw), pw.min, pw.max);
+function checkValidity(data) {
+  return isInRange(countOccurrence(data), data.min, data.max);
 }
 
 function sum(array) {
@@ -74,8 +60,29 @@ function sum(array) {
 
 console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), arrayToPassword), checkValidity)));
 
+function checkPosition(pos, letter, password) {
+  return password.charAt(pos - 1 | 0) === letter;
+}
+
+function checkValidity2(data) {
+  var match = checkPosition(data.min, data.letter, data.pw);
+  var match$1 = checkPosition(data.max, data.letter, data.pw);
+  if (match) {
+    if (match$1) {
+      return 0;
+    } else {
+      return 1;
+    }
+  } else if (match$1) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), arrayToPassword), checkValidity2)));
+
 exports.input = input;
-exports.handleOption = handleOption;
 exports.splitCase = splitCase;
 exports.splitInfo = splitInfo;
 exports.stringToInt = stringToInt;
@@ -84,4 +91,6 @@ exports.isInRange = isInRange;
 exports.countOccurrence = countOccurrence;
 exports.checkValidity = checkValidity;
 exports.sum = sum;
+exports.checkPosition = checkPosition;
+exports.checkValidity2 = checkValidity2;
 /* input Not a pure module */

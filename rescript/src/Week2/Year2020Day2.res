@@ -2,73 +2,73 @@ open Belt
 
 let input = Node.Fs.readFileAsUtf8Sync("input/Week2/Year2020Day2.input.txt")
 
-let handleOption = (input, none) => switch input {
-    | None => none
-    | Some(value) => value
-}
-
-let splitCase = input => Js.String.split("\n",input);
-let splitInfo = input => Js.String.splitByRe(%re("/\s|-|:\s/"), input) 
-                        -> Belt.Array.map((x) => x->handleOption(""));
-
+let splitCase = input => Js.String.split("\n", input)
+let splitInfo = input =>
+  Js.String.splitByRe(%re("/\s|-|:\s/"), input)->Belt.Array.map(x =>
+    x->Belt.Option.getWithDefault("")
+  )
 
 type password = {
-    min: int,
-    max: int,
-    letter: string,
-    pw: string
+  min: int,
+  max: int,
+  letter: string,
+  pw: string,
 }
 
-let stringToInt = str => switch str -> Belt.Int.fromString {
-    | None => 0
-    | Some(num) => num
-}
+let stringToInt = str => str->Belt.Int.fromString->Belt.Option.getWithDefault(0)
 
 let arrayToPassword = info => {
-    min: switch info[0] {
-        | None => 0
-        | Some(str) => str -> stringToInt
-    },
-    max: switch info[1] {
-        | None => 0
-        | Some(str) => str -> stringToInt
-    },
-    letter: switch info[2] {
-        | None => ""
-        | Some(str) => str
-    },
-    pw: switch info[3] {
-        | None => ""
-        | Some(str) => str
-    }
+  min: info[0]->Belt.Option.mapWithDefault(0, stringToInt),
+  max: info[1]->Belt.Option.mapWithDefault(0, stringToInt),
+  letter: info[2]->Belt.Option.getWithDefault(""),
+  pw: info[3]->Belt.Option.getWithDefault(""),
 }
 
-let isInRange = (num:int, min:int, max:int) => switch (num >= min, num <= max) {
-    | (true, true) => 1
-    | _ => 0
-}
+// let parsePassword = info => {
 
-let countOccurrence = pw => 
-{
-    pw.letter -> Js.Re.fromStringWithFlags(~flags="g")
-            -> Js.String.match_(pw.pw)
-            -> handleOption([])
-            -> Belt.Array.length
-}
+// }
 
-let checkValidity = pw => {
-    pw -> countOccurrence
-        -> isInRange(pw.min, pw.max)
-}
+let isInRange = (num: int, min: int, max: int) =>
+  switch (num >= min, num <= max) {
+  | (true, true) => 1
+  | _ => 0
+  }
 
-let sum = array => array ->Belt.Array.reduce(0,(acc, x) => acc+x)
+let countOccurrence = data =>
+  data.letter
+  ->Js.Re.fromStringWithFlags(~flags="g")
+  ->Js.String.match_(data.pw)
+  ->Belt.Option.mapWithDefault(0, Belt.Array.length)
 
-// let checkValidity = data => 
+let checkValidity = data => data->countOccurrence->isInRange(data.min, data.max)
 
-input -> splitCase
-    -> Belt.Array.map((x) => x->splitInfo)
-    -> Belt.Array.map((x) => x->arrayToPassword)
-    // -> Belt.Array.map((x) => x->countOccurrence)
-    -> Belt.Array.map((x) => x->checkValidity)
-    -> sum
-    -> Js.log
+let sum = array => array->Belt.Array.reduce(0, (acc, x) => acc + x)
+
+input
+->splitCase
+->Belt.Array.map(splitInfo)
+->Belt.Array.map(arrayToPassword)
+->Belt.Array.map(checkValidity)
+->sum
+->Js.log
+
+// part2
+
+let checkPosition = (pos, letter, password) => Js.String.charAt(pos - 1, password) == letter
+
+let checkValidity2 = data =>
+  switch (
+    checkPosition(data.min, data.letter, data.pw),
+    checkPosition(data.max, data.letter, data.pw),
+  ) {
+  | (false, false) | (true, true) => 0
+  | _ => 1
+  }
+
+input
+->splitCase
+->Belt.Array.map(splitInfo)
+->Belt.Array.map(arrayToPassword)
+->Belt.Array.map(checkValidity2)
+->sum
+->Js.log
