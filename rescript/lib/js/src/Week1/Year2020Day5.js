@@ -100,20 +100,19 @@ function setSlidingWindowList(_ids, _pairList) {
     if (!ids) {
       return pairList;
     }
-    var otherSeatIds = ids.tl;
-    if (!otherSeatIds) {
+    var match = ids.tl;
+    if (!match) {
       return pairList;
     }
-    var seatId2 = Belt_List.headExn(otherSeatIds);
     var $$new = Belt_List.concat(pairList, {
           hd: [
             ids.hd,
-            seatId2
+            match.hd
           ],
           tl: /* [] */0
         });
     _pairList = $$new;
-    _ids = otherSeatIds;
+    _ids = match.tl;
     continue ;
   };
 }

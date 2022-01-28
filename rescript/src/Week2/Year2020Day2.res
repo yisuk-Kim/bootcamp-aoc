@@ -2,12 +2,6 @@ open Belt
 
 let input = Node.Fs.readFileAsUtf8Sync("input/Week2/Year2020Day2.input.txt")
 
-let splitCase = input => Js.String.split("\n", input)
-let splitInfo = input =>
-  Js.String.splitByRe(%re("/\s|-|:\s/"), input)->Belt.Array.map(x =>
-    x->Belt.Option.getWithDefault("")
-  )
-
 type password = {
   min: int,
   max: int,
@@ -15,60 +9,100 @@ type password = {
   pw: string,
 }
 
-let stringToInt = str => str->Belt.Int.fromString->Belt.Option.getWithDefault(0)
+// string => option<password>
+let parsePassword = input => {
+  let splitCase = input => Js.String.split("\n", input)
+  let splitInfo = input => Js.String.splitByRe(%re("/\s|-|:\s/"), input)
+  let stringToInt = str => str->Belt.Int.fromString->Belt.Option.getWithDefault(0)
 
-let arrayToPassword = info => {
-  min: info[0]->Belt.Option.mapWithDefault(0, stringToInt),
-  max: info[1]->Belt.Option.mapWithDefault(0, stringToInt),
-  letter: info[2]->Belt.Option.getWithDefault(""),
-  pw: info[3]->Belt.Option.getWithDefault(""),
-}
+  let checkNone = input =>
+    switch input->Belt.Array.some(Belt.Option.isNone) {
+    | true => None
+    | false => Some(input->Belt.Array.map(x => x->Belt.Option.getExn))
+    }
 
-// let parsePassword = info => {
+  let stringArrayToPassword = data => {
+    let min = data[0]
+    let max = data[1]
+    let letter = data[2]
+    let pw = data[3]
 
-// }
-
-let isInRange = (num: int, min: int, max: int) =>
-  switch (num >= min, num <= max) {
-  | (true, true) => 1
-  | _ => 0
+    switch (min, max, letter, pw) {
+    | (Some(num1), Some(num2), Some(str1), Some(str2)) =>
+      Some({
+        min: num1->stringToInt,
+        max: num2->stringToInt,
+        letter: str1,
+        pw: str2,
+      })
+    | _ => None
+    }
   }
 
-let countOccurrence = data =>
-  data.letter
-  ->Js.Re.fromStringWithFlags(~flags="g")
-  ->Js.String.match_(data.pw)
-  ->Belt.Option.mapWithDefault(0, Belt.Array.length)
+  input
+  ->splitCase
+  ->Belt.Array.map(splitInfo)
+  ->Belt.Array.map(checkNone)
+  ->Belt.Array.map(x => x->Belt.Option.flatMap(stringArrayToPassword))
+}
 
-let checkValidity = data => data->countOccurrence->isInRange(data.min, data.max)
+// password => bool
+let checkValidity = data => {
+  let isInRange = (num: int, min: int, max: int) =>
+    switch (num >= min, num <= max) {
+    | (true, true) => true
+    | _ => false
+    }
 
-let sum = array => array->Belt.Array.reduce(0, (acc, x) => acc + x)
+  let countOccurrence = data =>
+    data.letter
+    ->Js.Re.fromStringWithFlags(~flags="g")
+    ->Js.String.match_(data.pw)
+    ->Belt.Option.mapWithDefault(0, Belt.Array.length)
+
+  data->countOccurrence->isInRange(data.min, data.max)
+}
+
+// Option.map(checkValidity) => option<password> => option<boolean>
+// array<boolean> => int
+let count = boolArray => {
+  let boolToInt = x =>
+    switch x {
+    | true => 1
+    | false => 0
+    }
+  let sum = array => array->Belt.Array.reduce(0, (acc, x) => acc + x)
+  boolArray->Belt.Array.map(boolToInt)->sum
+}
 
 input
-->splitCase
-->Belt.Array.map(splitInfo)
-->Belt.Array.map(arrayToPassword)
-->Belt.Array.map(checkValidity)
-->sum
+->parsePassword
+->Belt.Array.map(x => x->Belt.Option.map(checkValidity))
+->Belt.Array.keep(Belt.Option.isSome)
+->Belt.Array.map(Belt.Option.getExn)
+->count
 ->Js.log
 
 // part2
+// password => bool
+let checkValidity2 = data => {
+  let checkPosition = (pos, letter, pw) => Js.String.charAt(pos - 1, pw) == letter
 
-let checkPosition = (pos, letter, password) => Js.String.charAt(pos - 1, password) == letter
-
-let checkValidity2 = data =>
-  switch (
-    checkPosition(data.min, data.letter, data.pw),
-    checkPosition(data.max, data.letter, data.pw),
-  ) {
-  | (false, false) | (true, true) => 0
-  | _ => 1
-  }
+  let checkPolicy = data =>
+    switch (
+      checkPosition(data.min, data.letter, data.pw),
+      checkPosition(data.max, data.letter, data.pw),
+    ) {
+    | (false, false) | (true, true) => false
+    | _ => true
+    }
+  data->checkPolicy
+}
 
 input
-->splitCase
-->Belt.Array.map(splitInfo)
-->Belt.Array.map(arrayToPassword)
-->Belt.Array.map(checkValidity2)
-->sum
+->parsePassword
+->Belt.Array.map(x => x->Belt.Option.map(checkValidity2))
+->Belt.Array.keep(Belt.Option.isSome)
+->Belt.Array.map(Belt.Option.getExn)
+->count
 ->Js.log

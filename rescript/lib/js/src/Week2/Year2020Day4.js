@@ -6,22 +6,20 @@ var Belt_Array = require("rescript/lib/js/belt_Array.js");
 
 var input = Fs.readFileSync("input/Week2/Year2020Day4.sample.txt", "utf8");
 
-function splitPassport(data) {
-  return data.split("\n\n");
+function parsePassport(input) {
+  var splitField = function (data) {
+    return data.split(/\s/);
+  };
+  return Belt_Array.map(input.split("\n\n"), splitField);
 }
 
-function splitField(data) {
-  return data.split(/\s/);
+function countPassport(param) {
+  return 0;
 }
 
-function parsePassport(param) {
-  
-}
-
-console.log(Belt_Array.map(input.split("\n\n"), splitField));
+console.log(parsePassport(input));
 
 exports.input = input;
-exports.splitPassport = splitPassport;
-exports.splitField = splitField;
 exports.parsePassport = parsePassport;
+exports.countPassport = countPassport;
 /* input Not a pure module */

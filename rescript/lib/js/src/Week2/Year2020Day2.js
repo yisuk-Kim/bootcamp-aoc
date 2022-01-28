@@ -9,88 +9,99 @@ var Caml_option = require("rescript/lib/js/caml_option.js");
 
 var input = Fs.readFileSync("input/Week2/Year2020Day2.input.txt", "utf8");
 
-function splitCase(input) {
-  return input.split("\n");
-}
-
-function splitInfo(input) {
-  return Belt_Array.map(input.split(/\s|-|:\s/), (function (x) {
-                return Belt_Option.getWithDefault(x, "");
-              }));
-}
-
-function stringToInt(str) {
-  return Belt_Option.getWithDefault(Belt_Int.fromString(str), 0);
-}
-
-function arrayToPassword(info) {
-  return {
-          min: Belt_Option.mapWithDefault(Belt_Array.get(info, 0), 0, stringToInt),
-          max: Belt_Option.mapWithDefault(Belt_Array.get(info, 1), 0, stringToInt),
-          letter: Belt_Option.getWithDefault(Belt_Array.get(info, 2), ""),
-          pw: Belt_Option.getWithDefault(Belt_Array.get(info, 3), "")
-        };
-}
-
-function isInRange(num, min, max) {
-  var match = num >= min;
-  var match$1 = num <= max;
-  if (match && match$1) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-function countOccurrence(data) {
-  return Belt_Option.mapWithDefault(Caml_option.null_to_opt(data.pw.match(new RegExp(data.letter, "g"))), 0, (function (prim) {
-                return prim.length;
+function parsePassword(input) {
+  var splitInfo = function (input) {
+    return input.split(/\s|-|:\s/);
+  };
+  var checkNone = function (input) {
+    if (Belt_Array.some(input, Belt_Option.isNone)) {
+      return ;
+    } else {
+      return Belt_Array.map(input, Belt_Option.getExn);
+    }
+  };
+  var stringArrayToPassword = function (data) {
+    var min = Belt_Array.get(data, 0);
+    var max = Belt_Array.get(data, 1);
+    var letter = Belt_Array.get(data, 2);
+    var pw = Belt_Array.get(data, 3);
+    if (min !== undefined && max !== undefined && letter !== undefined && pw !== undefined) {
+      return {
+              min: Belt_Option.getWithDefault(Belt_Int.fromString(min), 0),
+              max: Belt_Option.getWithDefault(Belt_Int.fromString(max), 0),
+              letter: letter,
+              pw: pw
+            };
+    }
+    
+  };
+  return Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), checkNone), (function (x) {
+                return Belt_Option.flatMap(x, stringArrayToPassword);
               }));
 }
 
 function checkValidity(data) {
-  return isInRange(countOccurrence(data), data.min, data.max);
+  var countOccurrence = function (data) {
+    return Belt_Option.mapWithDefault(Caml_option.null_to_opt(data.pw.match(new RegExp(data.letter, "g"))), 0, (function (prim) {
+                  return prim.length;
+                }));
+  };
+  var num = countOccurrence(data);
+  var min = data.min;
+  var max = data.max;
+  var match = num >= min;
+  var match$1 = num <= max;
+  if (match && match$1) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
-function sum(array) {
+function count(boolArray) {
+  var boolToInt = function (x) {
+    if (x) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  var array = Belt_Array.map(boolArray, boolToInt);
   return Belt_Array.reduce(array, 0, (function (acc, x) {
                 return acc + x | 0;
               }));
 }
 
-console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), arrayToPassword), checkValidity)));
-
-function checkPosition(pos, letter, password) {
-  return password.charAt(pos - 1 | 0) === letter;
-}
+console.log(count(Belt_Array.map(Belt_Array.keep(Belt_Array.map(parsePassword(input), (function (x) {
+                        return Belt_Option.map(x, checkValidity);
+                      })), Belt_Option.isSome), Belt_Option.getExn)));
 
 function checkValidity2(data) {
+  var checkPosition = function (pos, letter, pw) {
+    return pw.charAt(pos - 1 | 0) === letter;
+  };
   var match = checkPosition(data.min, data.letter, data.pw);
   var match$1 = checkPosition(data.max, data.letter, data.pw);
   if (match) {
     if (match$1) {
-      return 0;
+      return false;
     } else {
-      return 1;
+      return true;
     }
   } else if (match$1) {
-    return 1;
+    return true;
   } else {
-    return 0;
+    return false;
   }
 }
 
-console.log(sum(Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), arrayToPassword), checkValidity2)));
+console.log(count(Belt_Array.map(Belt_Array.keep(Belt_Array.map(parsePassword(input), (function (x) {
+                        return Belt_Option.map(x, checkValidity2);
+                      })), Belt_Option.isSome), Belt_Option.getExn)));
 
 exports.input = input;
-exports.splitCase = splitCase;
-exports.splitInfo = splitInfo;
-exports.stringToInt = stringToInt;
-exports.arrayToPassword = arrayToPassword;
-exports.isInRange = isInRange;
-exports.countOccurrence = countOccurrence;
+exports.parsePassword = parsePassword;
 exports.checkValidity = checkValidity;
-exports.sum = sum;
-exports.checkPosition = checkPosition;
+exports.count = count;
 exports.checkValidity2 = checkValidity2;
 /* input Not a pure module */

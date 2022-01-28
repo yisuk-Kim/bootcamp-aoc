@@ -17,22 +17,24 @@ type passport = {
 
 let input = Node.Fs.readFileAsUtf8Sync("input/Week2/Year2020Day4.sample.txt")
 
-let splitPassport = data => Js.String.split("\n\n", data)
-let splitField = data => Js.String.splitByRe(%re("/\s/"), data)
-
 /*
 2. string 타입의 입력을 passport 타입으로 파싱하는 parsePassport 함수를 작성해보세요.
    (우선 parsePassport 타입의 타입 시그니처를 생각해보세요)
 */
 
-let parsePassport = () => ()
+// string => option<passport>
+let parsePassport = input => {
+  let splitCase = data => Js.String.split("\n\n", data)
+  let splitField = data => Js.String.splitByRe(%re("/\s/"), data)
+  input->splitCase->Belt.Array.map(splitField)
+}
 
 /*
 3. 올바른 Passport를 세는 countPassport 함수를 만들어서 문제를 해결해봅시다.
 */
-// let countPassport: array<passport> => int = _ => 0
+let countPassport: array<passport> => int = _ => 0
 
-input->splitPassport->Belt.Array.map(splitField)->Js.log
+input->parsePassport->Js.log
 
 // part2
 /*
