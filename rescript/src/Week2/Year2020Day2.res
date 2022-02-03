@@ -15,10 +15,10 @@ let parsePassword = input => {
   let splitInfo = input => Js.String.splitByRe(%re("/\s|-|:\s/"), input)
   let stringToInt = str => str->Belt.Int.fromString->Belt.Option.getWithDefault(0)
 
-  let checkNone = input =>
+  let liftOptionUp = input =>
     switch input->Belt.Array.some(Belt.Option.isNone) {
     | true => None
-    | false => Some(input->Belt.Array.map(x => x->Belt.Option.getExn))
+    | false => Some(input->Belt.Array.keepMap(x => x))
     }
 
   let stringArrayToPassword = data => {
@@ -42,13 +42,15 @@ let parsePassword = input => {
   input
   ->splitCase
   ->Belt.Array.map(splitInfo)
-  ->Belt.Array.map(checkNone)
+  ->Belt.Array.map(liftOptionUp) // option 1
   ->Belt.Array.map(x => x->Belt.Option.flatMap(stringArrayToPassword))
+  // ->Belt.Array.map(xs => xs->Belt.Array.keepMap(x => x)) // option 2
+  // ->Belt.Array.map(stringArrayToPassword)
 }
 
 // password => bool
 let checkValidity = data => {
-  let isInRange = (num: int, min: int, max: int) =>
+  let isInRange = (num: int, min: int, max: int): bool =>
     switch (num >= min, num <= max) {
     | (true, true) => true
     | _ => false
@@ -76,12 +78,11 @@ let count = boolArray => {
 }
 
 input
-->parsePassword
-->Belt.Array.map(x => x->Belt.Option.map(checkValidity))
-->Belt.Array.keep(Belt.Option.isSome)
-->Belt.Array.map(Belt.Option.getExn)
+->parsePassword // parse
+->Belt.Array.map(x => x->Belt.Option.map(checkValidity)) // process
+->Belt.Array.keepMap(x => x) // aggregate
 ->count
-->Js.log
+->Js.log // print
 
 // part2
 // password => bool
@@ -100,9 +101,8 @@ let checkValidity2 = data => {
 }
 
 input
-->parsePassword
-->Belt.Array.map(x => x->Belt.Option.map(checkValidity2))
-->Belt.Array.keep(Belt.Option.isSome)
-->Belt.Array.map(Belt.Option.getExn)
+->parsePassword // parse
+->Belt.Array.map(x => x->Belt.Option.map(checkValidity2)) // process
+->Belt.Array.keepMap(x => x) // aggregate
 ->count
-->Js.log
+->Js.log // print

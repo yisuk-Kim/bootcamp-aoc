@@ -13,11 +13,13 @@ function parsePassword(input) {
   var splitInfo = function (input) {
     return input.split(/\s|-|:\s/);
   };
-  var checkNone = function (input) {
+  var liftOptionUp = function (input) {
     if (Belt_Array.some(input, Belt_Option.isNone)) {
       return ;
     } else {
-      return Belt_Array.map(input, Belt_Option.getExn);
+      return Belt_Array.keepMap(input, (function (x) {
+                    return x;
+                  }));
     }
   };
   var stringArrayToPassword = function (data) {
@@ -35,7 +37,7 @@ function parsePassword(input) {
     }
     
   };
-  return Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), checkNone), (function (x) {
+  return Belt_Array.map(Belt_Array.map(Belt_Array.map(input.split("\n"), splitInfo), liftOptionUp), (function (x) {
                 return Belt_Option.flatMap(x, stringArrayToPassword);
               }));
 }
@@ -72,9 +74,11 @@ function count(boolArray) {
               }));
 }
 
-console.log(count(Belt_Array.map(Belt_Array.keep(Belt_Array.map(parsePassword(input), (function (x) {
-                        return Belt_Option.map(x, checkValidity);
-                      })), Belt_Option.isSome), Belt_Option.getExn)));
+console.log(count(Belt_Array.keepMap(Belt_Array.map(parsePassword(input), (function (x) {
+                    return Belt_Option.map(x, checkValidity);
+                  })), (function (x) {
+                return x;
+              }))));
 
 function checkValidity2(data) {
   var checkPosition = function (pos, letter, pw) {
@@ -95,9 +99,11 @@ function checkValidity2(data) {
   }
 }
 
-console.log(count(Belt_Array.map(Belt_Array.keep(Belt_Array.map(parsePassword(input), (function (x) {
-                        return Belt_Option.map(x, checkValidity2);
-                      })), Belt_Option.isSome), Belt_Option.getExn)));
+console.log(count(Belt_Array.keepMap(Belt_Array.map(parsePassword(input), (function (x) {
+                    return Belt_Option.map(x, checkValidity2);
+                  })), (function (x) {
+                return x;
+              }))));
 
 exports.input = input;
 exports.parsePassword = parsePassword;
