@@ -60,6 +60,12 @@ function checkValidity(data) {
   }
 }
 
+function filterNone(data) {
+  return Belt_Array.keepMap(data, (function (x) {
+                return x;
+              }));
+}
+
 function count(boolArray) {
   var boolToInt = function (x) {
     if (x) {
@@ -74,9 +80,11 @@ function count(boolArray) {
               }));
 }
 
-console.log(count(Belt_Array.keepMap(Belt_Array.map(parsePassword(input), (function (x) {
-                    return Belt_Option.map(x, checkValidity);
-                  })), (function (x) {
+var data = Belt_Array.map(parsePassword(input), (function (x) {
+        return Belt_Option.map(x, checkValidity);
+      }));
+
+console.log(count(Belt_Array.keepMap(data, (function (x) {
                 return x;
               }))));
 
@@ -99,15 +107,18 @@ function checkValidity2(data) {
   }
 }
 
-console.log(count(Belt_Array.keepMap(Belt_Array.map(parsePassword(input), (function (x) {
-                    return Belt_Option.map(x, checkValidity2);
-                  })), (function (x) {
+var data$1 = Belt_Array.map(parsePassword(input), (function (x) {
+        return Belt_Option.map(x, checkValidity2);
+      }));
+
+console.log(count(Belt_Array.keepMap(data$1, (function (x) {
                 return x;
               }))));
 
 exports.input = input;
 exports.parsePassword = parsePassword;
 exports.checkValidity = checkValidity;
+exports.filterNone = filterNone;
 exports.count = count;
 exports.checkValidity2 = checkValidity2;
 /* input Not a pure module */

@@ -86,100 +86,6 @@ console.log(Belt_Array.keepMap(data, (function (x) {
             return x;
           })).length);
 
-function parsePassport2(input) {
-  var returnIfValidRange = function (data, min, max) {
-    return Belt_Option.flatMap(Belt_Option.flatMap(data, Belt_Int.fromString), (function (x) {
-                  var match = x >= min;
-                  var match$1 = x <= max;
-                  if (match && match$1) {
-                    return data;
-                  }
-                  
-                }));
-  };
-  var eclSet = Belt_SetString.fromArray([
-        "amb",
-        "blu",
-        "brn",
-        "gry",
-        "grn",
-        "hzl",
-        "oth"
-      ]);
-  var checkValidityHgt = function (hgt) {
-    var unit = Belt_Option.map(hgt, (function (x) {
-            return x.slice(-2);
-          }));
-    var num = Belt_Option.map(hgt, (function (x) {
-            return x.slice(0, -2);
-          }));
-    if (unit === undefined) {
-      return ;
-    }
-    switch (unit) {
-      case "cm" :
-          return returnIfValidRange(num, 150, 193);
-      case "in" :
-          return returnIfValidRange(num, 59, 76);
-      default:
-        return ;
-    }
-  };
-  var checkValidityHcl = function (hcl) {
-    var rule = /^#[a-z0-9+]{6}$/;
-    var match = Belt_Option.map(hcl, (function (x) {
-            return rule.test(x);
-          }));
-    if (match !== undefined && match) {
-      return hcl;
-    }
-    
-  };
-  var checkValidityEcl = function (ecl) {
-    var match = Belt_Option.map(ecl, (function (x) {
-            return Belt_SetString.has(eclSet, x);
-          }));
-    if (match !== undefined && match) {
-      return ecl;
-    }
-    
-  };
-  var checkValidityPid = function (pid) {
-    var rule = /^0*[0-9+]{9}$/;
-    var match = Belt_Option.map(pid, (function (x) {
-            return rule.test(x);
-          }));
-    if (match !== undefined && match) {
-      return pid;
-    }
-    
-  };
-  var mapToPassport = function (data) {
-    var byr = returnIfValidRange(Belt_MapString.get(data, "byr"), 1920, 2002);
-    var iyr = returnIfValidRange(Belt_MapString.get(data, "iyr"), 2010, 2020);
-    var eyr = returnIfValidRange(Belt_MapString.get(data, "eyr"), 2020, 2030);
-    var hgt = checkValidityHgt(Belt_MapString.get(data, "hgt"));
-    var hcl = checkValidityHcl(Belt_MapString.get(data, "hcl"));
-    var ecl = checkValidityEcl(Belt_MapString.get(data, "ecl"));
-    var pid = checkValidityPid(Belt_MapString.get(data, "pid"));
-    var cid = Belt_MapString.get(data, "cid");
-    if (byr !== undefined && iyr !== undefined && eyr !== undefined && hgt !== undefined && hcl !== undefined && ecl !== undefined && pid !== undefined) {
-      return {
-              byr: byr,
-              iyr: iyr,
-              eyr: eyr,
-              hgt: hgt,
-              hcl: hcl,
-              ecl: ecl,
-              pid: pid,
-              cid: cid
-            };
-    }
-    
-  };
-  return Belt_Array.map(stringToArrayMap(input), mapToPassport);
-}
-
 function checkPassportValidity(data) {
   var isInValidRange = function (data, min, max) {
     var num = Belt_Int.fromString(data);
@@ -206,12 +112,12 @@ function checkPassportValidity(data) {
       ]);
   var checkHgtValidity = function (hgt) {
     var unit = hgt.slice(-2);
-    var num = hgt.slice(0, -2);
+    var value = hgt.slice(0, -2);
     switch (unit) {
       case "cm" :
-          return isInValidRange(num, 150, 193);
+          return isInValidRange(value, 150, 193);
       case "in" :
-          return isInValidRange(num, 59, 76);
+          return isInValidRange(value, 59, 76);
       default:
         return false;
     }
@@ -237,25 +143,100 @@ function checkPassportValidity(data) {
   
 }
 
-var data$1 = parsePassport2(input);
+function checkPassportValidity2(data) {
+  var isInValidRange = function (data, min, max) {
+    var num = Belt_Int.fromString(data);
+    var match = Belt_Option.map(num, (function (x) {
+            return [
+                    x >= min,
+                    x <= max
+                  ];
+          }));
+    if (match !== undefined && match[0] && match[1]) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  var eclSet = Belt_SetString.fromArray([
+        "amb",
+        "blu",
+        "brn",
+        "gry",
+        "grn",
+        "hzl",
+        "oth"
+      ]);
+  var checkHgtValidity = function (hgt) {
+    var unit = hgt.slice(-2);
+    var value = hgt.slice(0, -2);
+    switch (unit) {
+      case "cm" :
+          return isInValidRange(value, 150, 193);
+      case "in" :
+          return isInValidRange(value, 59, 76);
+      default:
+        return false;
+    }
+  };
+  var checkHclValidity = function (hcl) {
+    var rule = /^#[a-z0-9+]{6}$/;
+    return rule.test(hcl);
+  };
+  var checkPidValidity = function (pid) {
+    var rule = /^0*[0-9+]{9}$/;
+    return rule.test(pid);
+  };
+  var match = isInValidRange(data.byr, 1920, 2002);
+  var match$1 = isInValidRange(data.iyr, 2010, 2020);
+  var match$2 = isInValidRange(data.eyr, 2020, 2030);
+  var match$3 = checkHgtValidity(data.hgt);
+  var match$4 = checkHclValidity(data.hcl);
+  var match$5 = Belt_SetString.has(eclSet, data.ecl);
+  var match$6 = checkPidValidity(data.pid);
+  if (match && match$1 && match$2 && match$3 && match$4 && match$5 && match$6) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function countPassport2(boolArray) {
+  var boolToInt = function (x) {
+    if (x) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  var array = Belt_Array.map(boolArray, boolToInt);
+  return Belt_Array.reduce(array, 0, (function (acc, x) {
+                return acc + x | 0;
+              }));
+}
+
+var data$1 = Belt_Array.map(parsePassport(input), (function (x) {
+        return Belt_Option.flatMap(x, checkPassportValidity);
+      }));
 
 console.log(Belt_Array.keepMap(data$1, (function (x) {
             return x;
           })).length);
 
 var data$2 = Belt_Array.map(parsePassport(input), (function (x) {
-        return Belt_Option.flatMap(x, checkPassportValidity);
+        return Belt_Option.map(x, checkPassportValidity2);
       }));
 
-console.log(Belt_Array.keepMap(data$2, (function (x) {
-            return x;
-          })).length);
+console.log(countPassport2(Belt_Array.keepMap(data$2, (function (x) {
+                return x;
+              }))));
 
 exports.input = input;
 exports.stringToArrayMap = stringToArrayMap;
 exports.parsePassport = parsePassport;
 exports.filterNone = filterNone;
 exports.countPassport = countPassport;
-exports.parsePassport2 = parsePassport2;
 exports.checkPassportValidity = checkPassportValidity;
+exports.checkPassportValidity2 = checkPassportValidity2;
+exports.countPassport2 = countPassport2;
 /* input Not a pure module */

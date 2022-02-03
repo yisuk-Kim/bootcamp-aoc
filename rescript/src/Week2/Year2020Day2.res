@@ -65,6 +65,8 @@ let checkValidity = data => {
   data->countOccurrence->isInRange(data.min, data.max)
 }
 
+let filterNone = data => data->Belt.Array.keepMap(x => x)
+
 // Option.map(checkValidity) => option<password> => option<boolean>
 // array<boolean> => int
 let count = boolArray => {
@@ -80,7 +82,7 @@ let count = boolArray => {
 input
 ->parsePassword // parse
 ->Belt.Array.map(x => x->Belt.Option.map(checkValidity)) // process
-->Belt.Array.keepMap(x => x) // aggregate
+->filterNone // aggregate
 ->count
 ->Js.log // print
 
@@ -103,6 +105,6 @@ let checkValidity2 = data => {
 input
 ->parsePassword // parse
 ->Belt.Array.map(x => x->Belt.Option.map(checkValidity2)) // process
-->Belt.Array.keepMap(x => x) // aggregate
+->filterNone // aggregate
 ->count
 ->Js.log // print
