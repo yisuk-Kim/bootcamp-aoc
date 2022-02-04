@@ -15,6 +15,9 @@ let parsePassword = input => {
   let splitInfo = input => Js.String.splitByRe(%re("/\s|-|:\s/"), input)
   let stringToInt = str => str->Belt.Int.fromString->Belt.Option.getWithDefault(0)
 
+  // sequence :: array<option<'a>> => option<array<'a>>
+  // Promise.all :: array<promise<'a>> => promise<array<'a>>
+  // sequence :: t<f<'a>> => f<t<'a>>
   let liftOptionUp = input =>
     switch input->Belt.Array.some(Belt.Option.isNone) {
     | true => None
